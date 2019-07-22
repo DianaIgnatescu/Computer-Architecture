@@ -90,3 +90,16 @@ class CPU:
             # 0b00000000 = 0,
             # 0b00000001 = 1, # HLT
 
+            # Decode
+            if instruction == 0b10000010:
+                # Execute
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+            elif instruction == 0b01000111:
+                print(self.reg[operand_a])
+                self.pc += 2
+            elif instruction == 0b00000001:
+                running = False
+            else:
+                print(f"Invalid Instruction {instruction}")
+                sys.exit(1)
