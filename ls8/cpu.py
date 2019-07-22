@@ -6,8 +6,10 @@ class CPU:
     """Main CPU class."""
 
     def __init__(self):
-        """Construct a new CPU."""
-        pass
+        """Construct a new CPU.""" #TODO
+        self.reg = [0] * 8
+        self.pc = 0
+        self.ram = [0] * 256
 
     def load(self):
         """Load a program into memory."""
