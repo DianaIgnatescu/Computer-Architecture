@@ -71,4 +71,22 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # Running?
+        running = True
+
+        while running:
+            # Fetch
+            # Read the memory address stored in PC and store that result in instruction.
+            instruction = self.ram_read(self.pc)
+
+            # Using ram_read(), read the bytes at PC+1 and PC+2 from RAM into variables operand_a and operand_b
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            # 0b10000010 = 130, # LDI R0,8
+            # 0b00000000 = 0,
+            # 0b00001000 = 8,
+            # 0b01000111 = 71, # PRN R0
+            # 0b00000000 = 0,
+            # 0b00000001 = 1, # HLT
+
