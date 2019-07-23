@@ -121,14 +121,17 @@ class CPU:
             # 0b00000001 = 1, # HLT
 
             # Decode
-            if instruction == 0b10000010:
+            if instruction == self.opcodes["LDI"]:
                 # Execute
                 self.reg[operand_a] = operand_b
                 self.pc += 3
-            elif instruction == 0b01000111:
+            elif instruction == self.opcodes["PRN"]:
                 print(self.reg[operand_a])
                 self.pc += 2
-            elif instruction == 0b00000001:
+            elif instruction == self.opcodes["MUL"]:
+                self.reg[operand_a] *= operand_b
+                self.pc += 3
+            elif instruction == self.opcodes["HLT"]:
                 running = False
             else:
                 print(f"Invalid Instruction {instruction}")
