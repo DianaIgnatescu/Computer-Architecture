@@ -6,12 +6,19 @@ class CPU:
     """Main CPU class."""
 
     def __init__(self):
-        """Construct a new CPU.""" #TODO
+        """Construct a new CPU."""
+        self.running = False
         self.reg = [0] * 8
         self.pc = 0
         self.ram = [0] * 256
 
     def load(self):
+        self.opcodes = {
+            "LDI": 0b10000010,
+            "PRN": 0b01000111,
+            "MUL": 0b10100010,
+            "HLT": 0b00000001,
+        }
         """Load a program into memory."""
 
         address = 0
