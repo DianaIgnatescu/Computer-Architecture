@@ -11,14 +11,14 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.ram = [0] * 256
-
-    def load(self):
         self.opcodes = {
             "LDI": 0b10000010,
             "PRN": 0b01000111,
             "MUL": 0b10100010,
             "HLT": 0b00000001,
         }
+
+    def load(self, filename):
         """Load a program into memory."""
 
         address = 0
@@ -34,10 +34,30 @@ class CPU:
         #     0b00000000,
         #     0b00000001, # HLT
         # ]
+
         program = []
 
+        try:
+            with open(filename) as f:
+                for line in f:
+                    # split before and after any comment symbols
+                    comment_split = line.split('#')
+                    # convert the pre-comment portion to a value
+                    number = comment_split[0].strip()  # trim whitespace
+
+                    if number == "":
+                        continue  # ignore blank lines
+
+                    val = int(number, 2)
+
+                    program.append(val)
+
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: {filename} not found")
+            sys.exit(2)
+
         for instruction in program:
-            self.ram[address] = instruction
+            self.ram_write(address, instruction)
             address += 1
 
     # should accept the address to read and return the value stored there.
