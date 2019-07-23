@@ -23,18 +23,6 @@ class CPU:
 
         address = 0
 
-        # For now, we've just hardcoded a program:
-
-        # program = [
-        #     # From print8.ls8
-        #     0b10000010, # LDI R0,8
-        #     0b00000000,
-        #     0b00001000,
-        #     0b01000111, # PRN R0
-        #     0b00000000,
-        #     0b00000001, # HLT
-        # ]
-
         program = []
 
         try:
@@ -112,13 +100,6 @@ class CPU:
             # Using ram_read(), read the bytes at PC+1 and PC+2 from RAM into variables operand_a and operand_b
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
-
-            # 0b10000010 = 130, # LDI R0,8
-            # 0b00000000 = 0,
-            # 0b00001000 = 8,
-            # 0b01000111 = 71, # PRN R0
-            # 0b00000000 = 0,
-            # 0b00000001 = 1, # HLT
 
             # Decode
             if instruction == self.opcodes["LDI"]:
