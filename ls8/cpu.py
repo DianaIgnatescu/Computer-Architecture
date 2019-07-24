@@ -43,15 +43,12 @@ class CPU:
 
                     val = int(number, 2)
 
-                    program.append(val)
+                    self.ram_write(address, val)
+                    address += 1
 
         except FileNotFoundError:
             print(f"{sys.argv[0]}: {filename} not found")
             sys.exit(2)
-
-        for instruction in program:
-            self.ram_write(address, instruction)
-            address += 1
 
     # should accept the address to read and return the value stored there.
     def ram_read(self, address):
@@ -136,7 +133,7 @@ class CPU:
                 print(self.reg[operand_a])
                 self.pc += 2
             elif instruction == self.opcodes["MUL"]:
-                self.reg[operand_a] *= operand_b
+                self.alu("MUL", operand_a, operand_b)
                 self.pc += 3
             elif instruction == self.opcodes["PUSH"]:
                 self.stack_push(self.reg[operand_a])
