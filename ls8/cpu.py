@@ -22,6 +22,12 @@ class CPU:
             "POP": 0b01000110,
             "HLT": 0b00000001,
         }
+        self.branchtable = {}
+        self.branchtable[self.opcodes["LDI"]] = self.LDI
+        self.branchtable[self.opcodes["PRN"]] = self.PRN
+        self.branchtable[self.opcodes["MUL"]] = self.MUL
+        self.branchtable[self.opcodes["PUSH"]] = self.PUSH
+        self.branchtable[self.opcodes["POP"]] = self.POP
 
     def load(self, filename):
         """Load a program into memory."""
