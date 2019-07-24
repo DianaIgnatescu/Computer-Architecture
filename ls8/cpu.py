@@ -64,10 +64,29 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
+    def LDI(self, operand_a, operand_b):
+        self.reg[operand_a] = operand_b
+        self.pc += 3
+
+    def PRN(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+        self.pc += 2
+
+    def MUL(self, operand_a, operand_b):
+        self.alu("MUL", operand_a, operand_b)
+        self.pc += 3
+
+    def PUSH(self, operand_a, operand_b):
+        self.stack_push(self.reg[operand_a])
+        self.pc += 2
+
+    def POP(self, operand_a, operand_b):
+        self.reg[operand_a] = self.stack_pop(self.reg[operand_a])
+        self.pc += 2
+
     # Push the value in the given register on the stack.
     # Decrement the SP
     # Copy the value in the given register to the address pointed to by SP.
-
     def stack_push(self, value):
         self.alu("DEC", self.sp, self.reg[value])
         self.ram_write(self.reg[self.sp], value)
@@ -118,7 +137,7 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # Running?
+
         running = True
 
         while running:
@@ -131,22 +150,8 @@ class CPU:
             operand_b = self.ram_read(self.pc + 2)
 
             # Decode
-            if instruction == self.opcodes["LDI"]:
-                # Execute
-                self.reg[operand_a] = operand_b
-                self.pc += 3
-            elif instruction == self.opcodes["PRN"]:
-                print(self.reg[operand_a])
-                self.pc += 2
-            elif instruction == self.opcodes["MUL"]:
-                self.alu("MUL", operand_a, operand_b)
-                self.pc += 3
-            elif instruction == self.opcodes["PUSH"]:
-                self.stack_push(self.reg[operand_a])
-                self.pc += 2
-            elif instruction == self.opcodes["POP"]:
-                self.reg[operand_a] = self.stack_pop(self.reg[operand_a])
-                self.pc += 2
+            if instruction in self.branchtable:
+                self.branchtable[instruction](operand_a, operand_b)
             elif instruction == self.opcodes["HLT"]:
                 running = False
             else:
