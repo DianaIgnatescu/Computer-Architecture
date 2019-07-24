@@ -138,6 +138,12 @@ class CPU:
             elif instruction == self.opcodes["MUL"]:
                 self.reg[operand_a] *= operand_b
                 self.pc += 3
+            elif instruction == self.opcodes["PUSH"]:
+                self.stack_push(self.reg[operand_a])
+                self.pc += 2
+            elif instruction == self.opcodes["POP"]:
+                self.reg[operand_a] = self.stack_pop(self.reg[operand_a])
+                self.pc += 2
             elif instruction == self.opcodes["HLT"]:
                 running = False
             else:
