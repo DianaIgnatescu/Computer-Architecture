@@ -18,6 +18,7 @@ class CPU:
             "LDI": 0b10000010,
             "PRN": 0b01000111,
             "MUL": 0b10100010,
+            "ADD": 0b10100000,
             "PUSH": 0b01000101,
             "POP": 0b01000110,
             "CALL": 0b01010000,
@@ -28,6 +29,7 @@ class CPU:
         self.branchtable[self.opcodes["LDI"]] = self.LDI
         self.branchtable[self.opcodes["PRN"]] = self.PRN
         self.branchtable[self.opcodes["MUL"]] = self.MUL
+        self.branchtable[self.opcodes["ADD"]] = self.ADD
         self.branchtable[self.opcodes["PUSH"]] = self.PUSH
         self.branchtable[self.opcodes["POP"]] = self.POP
         self.branchtable[self.opcodes["CALL"]] = self.CALL
@@ -78,6 +80,10 @@ class CPU:
 
     def MUL(self, operand_a, operand_b):
         self.alu("MUL", operand_a, operand_b)
+        self.pc += 3
+
+    def ADD(self, operand_a, operand_b):
+        self.alu("ADD", operand_a, operand_b)
         self.pc += 3
 
     def PUSH(self, operand_a, operand_b):
