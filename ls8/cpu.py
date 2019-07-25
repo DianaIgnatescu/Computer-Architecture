@@ -21,6 +21,7 @@ class CPU:
             "PUSH": 0b01000101,
             "POP": 0b01000110,
             "CALL": 0b01010000,
+            "RET": 0b00010001,
             "HLT": 0b00000001,
         }
         self.branchtable = {}
@@ -30,6 +31,7 @@ class CPU:
         self.branchtable[self.opcodes["PUSH"]] = self.PUSH
         self.branchtable[self.opcodes["POP"]] = self.POP
         self.branchtable[self.opcodes["CALL"]] = self.CALL
+        self.branchtable[self.opcodes["RET"]] = self.RET
 
     def load(self, filename):
         """Load a program into memory."""
@@ -101,6 +103,16 @@ class CPU:
         popped = self.ram_read(self.reg[self.sp])
         self.alu("INC", self.sp, value)
         return popped
+
+    def CALL(self, operand_a, operand_b):
+        self.reg[self.sp] -= 1
+        self.ram[self.reg[self.sp]] = self.pc + 2
+        # set the instruction pointer to the subroutine
+        next_instruction = self.ram[self.pc + 1]
+        self.pc = self.reg[next_instruction]
+
+    def RET(self, operand_a, operand_b):
+        self.pc = self.stack_pop(self)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
