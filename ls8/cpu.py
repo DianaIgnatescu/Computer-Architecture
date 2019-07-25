@@ -2,6 +2,7 @@
 
 import sys
 
+
 class CPU:
     """Main CPU class."""
 
@@ -11,12 +12,28 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.ram = [0] * 256
+        self.reg[7] = 0xFF
+        self.sp = 7
         self.opcodes = {
             "LDI": 0b10000010,
             "PRN": 0b01000111,
             "MUL": 0b10100010,
+            "ADD": 0b10100000,
+            "PUSH": 0b01000101,
+            "POP": 0b01000110,
+            "CALL": 0b01010000,
+            "RET": 0b00010001,
             "HLT": 0b00000001,
         }
+        self.branchtable = {}
+        self.branchtable[self.opcodes["LDI"]] = self.LDI
+        self.branchtable[self.opcodes["PRN"]] = self.PRN
+        self.branchtable[self.opcodes["MUL"]] = self.MUL
+        self.branchtable[self.opcodes["ADD"]] = self.ADD
+        self.branchtable[self.opcodes["PUSH"]] = self.PUSH
+        self.branchtable[self.opcodes["POP"]] = self.POP
+        self.branchtable[self.opcodes["CALL"]] = self.CALL
+        self.branchtable[self.opcodes["RET"]] = self.RET
 
     def load(self, filename):
         """Load a program into memory."""
@@ -38,15 +55,12 @@ class CPU:
 
                     val = int(number, 2)
 
-                    program.append(val)
+                    self.ram_write(address, val)
+                    address += 1
 
         except FileNotFoundError:
             print(f"{sys.argv[0]}: {filename} not found")
             sys.exit(2)
-
-        for instruction in program:
-            self.ram_write(address, instruction)
-            address += 1
 
     # should accept the address to read and return the value stored there.
     def ram_read(self, address):
@@ -56,6 +70,56 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
+    def LDI(self, operand_a, operand_b):
+        self.reg[operand_a] = operand_b
+        self.pc += 3
+
+    def PRN(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+        self.pc += 2
+
+    def MUL(self, operand_a, operand_b):
+        self.alu("MUL", operand_a, operand_b)
+        self.pc += 3
+
+    def ADD(self, operand_a, operand_b):
+        self.alu("ADD", operand_a, operand_b)
+        self.pc += 3
+
+    def PUSH(self, operand_a, operand_b):
+        self.stack_push(self.reg[operand_a])
+        self.pc += 2
+
+    def POP(self, operand_a, operand_b):
+        self.reg[operand_a] = self.stack_pop(self.reg[operand_a])
+        self.pc += 2
+
+    # Push the value in the given register on the stack.
+    # Decrement the SP
+    # Copy the value in the given register to the address pointed to by SP.
+    def stack_push(self, value):
+        self.alu("DEC", self.sp, self.reg[value])
+        self.ram_write(self.reg[self.sp], value)
+
+    # Pop the value at the top of the stack into the given register.
+    # 1. Copy the value from the address pointed to by `SP` to the given register.
+    # 2. Increment `SP`.
+
+    def stack_pop(self, value):
+        popped = self.ram_read(self.reg[self.sp])
+        self.alu("INC", self.sp, value)
+        return popped
+
+    def CALL(self, operand_a, operand_b):
+        self.reg[self.sp] -= 1
+        self.ram[self.reg[self.sp]] = self.pc + 2
+        # set the instruction pointer to the subroutine
+        next_instruction = self.ram[self.pc + 1]
+        self.pc = self.reg[next_instruction]
+
+    def RET(self, operand_a, operand_b):
+        self.pc = self.stack_pop(self)
+
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
@@ -63,6 +127,10 @@ class CPU:
             self.reg[reg_a] += self.reg[reg_b]
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "INC":
+            self.reg[reg_a] += 1
+        elif op == "DEC":
+            self.reg[reg_a] -= 1
         # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
@@ -89,7 +157,7 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # Running?
+
         running = True
 
         while running:
@@ -102,16 +170,8 @@ class CPU:
             operand_b = self.ram_read(self.pc + 2)
 
             # Decode
-            if instruction == self.opcodes["LDI"]:
-                # Execute
-                self.reg[operand_a] = operand_b
-                self.pc += 3
-            elif instruction == self.opcodes["PRN"]:
-                print(self.reg[operand_a])
-                self.pc += 2
-            elif instruction == self.opcodes["MUL"]:
-                self.reg[operand_a] *= operand_b
-                self.pc += 3
+            if instruction in self.branchtable:
+                self.branchtable[instruction](operand_a, operand_b)
             elif instruction == self.opcodes["HLT"]:
                 running = False
             else:
