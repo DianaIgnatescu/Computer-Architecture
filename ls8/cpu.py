@@ -71,6 +71,19 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
+    def stack_push(self, value):
+        # Decrement the SP
+        # Copy the value in the given register to the address pointed to by SP.
+        self.alu("DEC", self.sp, self.reg[value])
+        self.ram_write(self.reg[self.sp], value)
+
+    def stack_pop(self, value):
+        # Copy the value from the address pointed to by `SP` to the given register.
+        # Increment `SP`.
+        popped = self.ram_read(self.reg[self.sp])
+        self.alu("INC", self.sp, value)
+        return popped
+
     def LDI(self, operand_a, operand_b):
         self.reg[operand_a] = operand_b
         self.pc += 3
