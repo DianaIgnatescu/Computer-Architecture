@@ -20,6 +20,7 @@ class CPU:
             "PRN": 0b01000111,
             "MUL": 0b10100010,
             "ADD": 0b10100000,
+            "CMP": 0b10100111,
             "PUSH": 0b01000101,
             "POP": 0b01000110,
             "CALL": 0b01010000,
@@ -35,6 +36,7 @@ class CPU:
         self.branchtable[self.opcodes["POP"]] = self.POP
         self.branchtable[self.opcodes["CALL"]] = self.CALL
         self.branchtable[self.opcodes["RET"]] = self.RET
+        self.branchtable[self.opcodes["CMP"]] = self.CMP
 
     def load(self, filename):
         """Load a program into memory."""
@@ -100,6 +102,10 @@ class CPU:
         self.alu("ADD", operand_a, operand_b)
         self.pc += 3
 
+    def CMP(self, operand_a, operand_b):
+        self.alu("CMP", operand_a, operand_b)
+        self.pc += 3
+
     def PUSH(self, operand_a, operand_b):
         self.stack_push(self.reg[operand_a])
         self.pc += 2
@@ -145,6 +151,13 @@ class CPU:
             self.reg[reg_a] += 1
         elif op == "DEC":
             self.reg[reg_a] -= 1
+        elif op == "CMP":
+            if self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 0b00000001
+            else:
+                self.fl = 0b00000100
         # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
