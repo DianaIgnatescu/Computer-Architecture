@@ -14,17 +14,30 @@ class CPU:
         self.ram = [0] * 256
         self.reg[7] = 0xFF
         self.sp = 7
+        self.fl = 0b00000000
         self.opcodes = {
             "LDI": 0b10000010,
             "PRN": 0b01000111,
             "MUL": 0b10100010,
             "ADD": 0b10100000,
+            "AND": 0b10101000,
+            "OR": 0b10101010,
+            "XOR": 0b10101011,
+            "NOT": 0b01101001,
+            "SHL": 0b10101100,
+            "SHR": 0b10101101,
+            "MOD": 0b10100100,
+            "CMP": 0b10100111,
             "PUSH": 0b01000101,
             "POP": 0b01000110,
+            "JMP": 0b01010100,
+            "JEQ": 0b01010101,
+            "JNE": 0b01010110,
             "CALL": 0b01010000,
             "RET": 0b00010001,
             "HLT": 0b00000001,
         }
+
         self.branchtable = {}
         self.branchtable[self.opcodes["LDI"]] = self.LDI
         self.branchtable[self.opcodes["PRN"]] = self.PRN
@@ -34,6 +47,18 @@ class CPU:
         self.branchtable[self.opcodes["POP"]] = self.POP
         self.branchtable[self.opcodes["CALL"]] = self.CALL
         self.branchtable[self.opcodes["RET"]] = self.RET
+        self.branchtable[self.opcodes["CMP"]] = self.CMP
+        self.branchtable[self.opcodes["JMP"]] = self.JMP
+        self.branchtable[self.opcodes["JEQ"]] = self.JEQ
+        self.branchtable[self.opcodes["JNE"]] = self.JNE
+        self.branchtable[self.opcodes["AND"]] = self.AND
+        self.branchtable[self.opcodes["OR"]] = self.OR
+        self.branchtable[self.opcodes["XOR"]] = self.XOR
+        self.branchtable[self.opcodes["NOT"]] = self.NOT
+        self.branchtable[self.opcodes["SHL"]] = self.SHL
+        self.branchtable[self.opcodes["SHR"]] = self.SHR
+        self.branchtable[self.opcodes["MOD"]] = self.MOD
+
 
     def load(self, filename):
         """Load a program into memory."""
@@ -70,6 +95,19 @@ class CPU:
     def ram_write(self, address, value):
         self.ram[address] = value
 
+    def stack_push(self, value):
+        # Decrement the SP
+        # Copy the value in the given register to the address pointed to by SP.
+        self.alu("DEC", self.sp, self.reg[value])
+        self.ram_write(self.reg[self.sp], value)
+
+    def stack_pop(self, value):
+        # Copy the value from the address pointed to by `SP` to the given register.
+        # Increment `SP`.
+        popped = self.ram_read(self.reg[self.sp])
+        self.alu("INC", self.sp, value)
+        return popped
+
     def LDI(self, operand_a, operand_b):
         self.reg[operand_a] = operand_b
         self.pc += 3
@@ -86,6 +124,38 @@ class CPU:
         self.alu("ADD", operand_a, operand_b)
         self.pc += 3
 
+    def CMP(self, operand_a, operand_b):
+        self.alu("CMP", operand_a, operand_b)
+        self.pc += 3
+
+    def AND(self, operand_a, operand_b):
+        self.alu("AND", operand_a, operand_b)
+        self.pc += 3
+
+    def OR(self, operand_a, operand_b):
+        self.alu("OR", operand_a, operand_b)
+        self.pc += 3
+
+    def XOR(self, operand_a, operand_b):
+        self.alu("XOR", operand_a, operand_b)
+        self.pc += 3
+
+    def NOT(self, operand_a, operand_b):
+        self.alu("NOT", operand_a, operand_b)
+        self.pc += 3
+
+    def SHL(self, operand_a, operand_b):
+        self.alu("SHL", operand_a, operand_b)
+        self.pc += 3
+
+    def SHR(self, operand_a, operand_b):
+        self.alu("SHR", operand_a, operand_b)
+        self.pc += 3
+
+    def MOD(self, operand_a, operand_b):
+        self.alu("MOD", operand_a, operand_b)
+        self.pc += 3
+
     def PUSH(self, operand_a, operand_b):
         self.stack_push(self.reg[operand_a])
         self.pc += 2
@@ -93,22 +163,6 @@ class CPU:
     def POP(self, operand_a, operand_b):
         self.reg[operand_a] = self.stack_pop(self.reg[operand_a])
         self.pc += 2
-
-    # Push the value in the given register on the stack.
-    # Decrement the SP
-    # Copy the value in the given register to the address pointed to by SP.
-    def stack_push(self, value):
-        self.alu("DEC", self.sp, self.reg[value])
-        self.ram_write(self.reg[self.sp], value)
-
-    # Pop the value at the top of the stack into the given register.
-    # 1. Copy the value from the address pointed to by `SP` to the given register.
-    # 2. Increment `SP`.
-
-    def stack_pop(self, value):
-        popped = self.ram_read(self.reg[self.sp])
-        self.alu("INC", self.sp, value)
-        return popped
 
     def CALL(self, operand_a, operand_b):
         self.reg[self.sp] -= 1
@@ -119,6 +173,24 @@ class CPU:
 
     def RET(self, operand_a, operand_b):
         self.pc = self.stack_pop(self)
+
+    def JMP(self, operand_a, operand_b):
+        # Set the PC to the address stored in the given register
+        self.pc = self.reg[operand_a]
+
+    def JEQ(self, operand_a, operand_b):
+        # If equal flag is set, jump to the address stored in the given register
+        if self.fl == 0b00000001:
+            self.pc = self.reg[operand_a]
+        else:
+            self.pc += 2
+
+    def JNE(self, operand_a, operand_b):
+        # If equal flag is clear, jump to the address stored in the given register
+        if self.fl != 0b00000001:
+            self.pc = self.reg[operand_a]
+        else:
+            self.pc += 2
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -131,6 +203,27 @@ class CPU:
             self.reg[reg_a] += 1
         elif op == "DEC":
             self.reg[reg_a] -= 1
+        elif op == "CMP":
+            if self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 0b00000001
+            else:
+                self.fl = 0b00000100
+        elif op == "AND":
+            self.reg[reg_a] &= self.reg[reg_b]
+        elif op == "OR":
+            self.reg[reg_a] |= self.reg[reg_b]
+        elif op == "XOR":
+            self.reg[reg_a] ^= self.reg[reg_b]
+        elif op == "NOT":
+            self.reg[reg_a] = ~self.reg[reg_a]
+        elif op == "SHL":
+            self.reg[reg_a] <<= self.reg[reg_b]
+        elif op == "SHR":
+            self.reg[reg_a] >>= self.reg[reg_b]
+        elif op == "MOD":
+            self.reg[reg_a] %= self.reg[reg_b]
         # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
