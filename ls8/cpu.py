@@ -23,6 +23,7 @@ class CPU:
             "CMP": 0b10100111,
             "PUSH": 0b01000101,
             "POP": 0b01000110,
+            "JMP": 0b01010100,
             "CALL": 0b01010000,
             "RET": 0b00010001,
             "HLT": 0b00000001,
@@ -37,6 +38,7 @@ class CPU:
         self.branchtable[self.opcodes["CALL"]] = self.CALL
         self.branchtable[self.opcodes["RET"]] = self.RET
         self.branchtable[self.opcodes["CMP"]] = self.CMP
+        self.branchtable[self.opcodes["JMP"]] = self.JMP
 
     def load(self, filename):
         """Load a program into memory."""
@@ -123,6 +125,10 @@ class CPU:
 
     def RET(self, operand_a, operand_b):
         self.pc = self.stack_pop(self)
+
+    def JMP(self, operand_a, operand_b):
+        # Set the PC to the address stored in the given register
+        self.pc = self.reg[operand_a]
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
