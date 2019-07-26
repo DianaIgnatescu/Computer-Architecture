@@ -25,6 +25,7 @@ class CPU:
             "POP": 0b01000110,
             "JMP": 0b01010100,
             "JEQ": 0b01010101,
+            "JNE": 0b01010110,
             "CALL": 0b01010000,
             "RET": 0b00010001,
             "HLT": 0b00000001,
@@ -41,6 +42,7 @@ class CPU:
         self.branchtable[self.opcodes["CMP"]] = self.CMP
         self.branchtable[self.opcodes["JMP"]] = self.JMP
         self.branchtable[self.opcodes["JEQ"]] = self.JEQ
+        self.branchtable[self.opcodes["JNE"]] = self.JNE
 
     def load(self, filename):
         """Load a program into memory."""
@@ -135,6 +137,13 @@ class CPU:
     def JEQ(self, operand_a, operand_b):
         # If equal flag is set, jump to the address stored in the given register
         if self.fl == 0b00000001:
+            self.pc = self.reg[operand_a]
+        else:
+            self.pc += 2
+
+    def JNE(self, operand_a, operand_b):
+        # If equal flag is clear, jump to the address stored in the given register
+        if self.fl != 0b00000001:
             self.pc = self.reg[operand_a]
         else:
             self.pc += 2
