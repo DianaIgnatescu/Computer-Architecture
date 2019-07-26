@@ -20,6 +20,13 @@ class CPU:
             "PRN": 0b01000111,
             "MUL": 0b10100010,
             "ADD": 0b10100000,
+            "AND": 0b10101000,
+            "OR": 0b10101010,
+            "XOR": 0b10101011,
+            "NOT": 0b01101001,
+            "SHL": 0b10101100,
+            "SHR": 0b10101101,
+            "MOD": 0b10100100,
             "CMP": 0b10100111,
             "PUSH": 0b01000101,
             "POP": 0b01000110,
@@ -30,6 +37,9 @@ class CPU:
             "RET": 0b00010001,
             "HLT": 0b00000001,
         }
+
+        # Add the ALU operations: AND OR XOR NOT SHL SHR MOD
+
         self.branchtable = {}
         self.branchtable[self.opcodes["LDI"]] = self.LDI
         self.branchtable[self.opcodes["PRN"]] = self.PRN
@@ -43,6 +53,15 @@ class CPU:
         self.branchtable[self.opcodes["JMP"]] = self.JMP
         self.branchtable[self.opcodes["JEQ"]] = self.JEQ
         self.branchtable[self.opcodes["JNE"]] = self.JNE
+
+        self.branchtable[self.opcodes["AND"]] = self.AND
+        self.branchtable[self.opcodes["OR"]] = self.OR
+        self.branchtable[self.opcodes["XOR"]] = self.XOR
+        self.branchtable[self.opcodes["NOT"]] = self.NOT
+        self.branchtable[self.opcodes["SHL"]] = self.SHL
+        self.branchtable[self.opcodes["SHR"]] = self.SHR
+        self.branchtable[self.opcodes["MOD"]] = self.MOD
+
 
     def load(self, filename):
         """Load a program into memory."""
@@ -112,6 +131,34 @@ class CPU:
         self.alu("CMP", operand_a, operand_b)
         self.pc += 3
 
+    def AND(self, operand_a, operand_b):
+        self.alu("AND", operand_a, operand_b)
+        self.pc += 3
+
+    def OR(self, operand_a, operand_b):
+        self.alu("OR", operand_a, operand_b)
+        self.pc += 3
+
+    def XOR(self, operand_a, operand_b):
+        self.alu("XOR", operand_a, operand_b)
+        self.pc += 3
+
+    def NOT(self, operand_a, operand_b):
+        self.alu("NOT", operand_a, operand_b)
+        self.pc += 3
+
+    def SHL(self, operand_a, operand_b):
+        self.alu("SHL", operand_a, operand_b)
+        self.pc += 3
+
+    def SHR(self, operand_a, operand_b):
+        self.alu("SHR", operand_a, operand_b)
+        self.pc += 3
+
+    def MOD(self, operand_a, operand_b):
+        self.alu("MOD", operand_a, operand_b)
+        self.pc += 3
+
     def PUSH(self, operand_a, operand_b):
         self.stack_push(self.reg[operand_a])
         self.pc += 2
@@ -166,6 +213,20 @@ class CPU:
                 self.fl = 0b00000001
             else:
                 self.fl = 0b00000100
+        elif op == "AND":
+            self.reg[reg_a] &= self.reg[reg_b]
+        elif op == "OR":
+            self.reg[reg_a] |= self.reg[reg_b]
+        elif op == "XOR":
+            self.reg[reg_a] ^= self.reg[reg_b]
+        elif op == "NOT":
+            self.reg[reg_a] = ~self.reg[reg_a]
+        elif op == "SHL":
+            self.reg[reg_a] <<= self.reg[reg_b]
+        elif op == "SHR":
+            self.reg[reg_a] >>= self.reg[reg_b]
+        elif op == "MOD":
+            self.reg[reg_a] %= self.reg[reg_b]
         # elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
