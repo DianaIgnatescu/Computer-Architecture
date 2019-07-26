@@ -38,8 +38,6 @@ class CPU:
             "HLT": 0b00000001,
         }
 
-        # Add the ALU operations: AND OR XOR NOT SHL SHR MOD
-
         self.branchtable = {}
         self.branchtable[self.opcodes["LDI"]] = self.LDI
         self.branchtable[self.opcodes["PRN"]] = self.PRN
@@ -53,7 +51,6 @@ class CPU:
         self.branchtable[self.opcodes["JMP"]] = self.JMP
         self.branchtable[self.opcodes["JEQ"]] = self.JEQ
         self.branchtable[self.opcodes["JNE"]] = self.JNE
-
         self.branchtable[self.opcodes["AND"]] = self.AND
         self.branchtable[self.opcodes["OR"]] = self.OR
         self.branchtable[self.opcodes["XOR"]] = self.XOR
