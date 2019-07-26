@@ -114,22 +114,6 @@ class CPU:
         self.reg[operand_a] = self.stack_pop(self.reg[operand_a])
         self.pc += 2
 
-    # Push the value in the given register on the stack.
-    # Decrement the SP
-    # Copy the value in the given register to the address pointed to by SP.
-    def stack_push(self, value):
-        self.alu("DEC", self.sp, self.reg[value])
-        self.ram_write(self.reg[self.sp], value)
-
-    # Pop the value at the top of the stack into the given register.
-    # 1. Copy the value from the address pointed to by `SP` to the given register.
-    # 2. Increment `SP`.
-
-    def stack_pop(self, value):
-        popped = self.ram_read(self.reg[self.sp])
-        self.alu("INC", self.sp, value)
-        return popped
-
     def CALL(self, operand_a, operand_b):
         self.reg[self.sp] -= 1
         self.ram[self.reg[self.sp]] = self.pc + 2
